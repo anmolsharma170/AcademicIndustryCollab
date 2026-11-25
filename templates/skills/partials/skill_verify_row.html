@@ -1,0 +1,29 @@
+<div id="skill-verify-row-{{ entry.pk }}" class="flex items-center justify-between gap-4 px-5 py-3.5">
+    <div class="min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="text-sm font-medium text-slate-900">{{ entry.student.user.full_name }}</span>
+            <span class="text-slate-300">·</span>
+            <span class="text-sm font-semibold text-indigo-700">{{ entry.skill.name }}</span>
+            <span class="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-600">
+                {{ entry.get_proficiency_level_display }}
+            </span>
+            {% if entry.is_verified %}
+                <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                    <i data-lucide="badge-check" class="h-3 w-3"></i> Verified
+                </span>
+            {% endif %}
+        </div>
+        <p class="mt-0.5 text-xs text-slate-500">
+            {{ entry.student.department }} · Class of {{ entry.student.graduation_year }}
+        </p>
+    </div>
+    <button
+        type="button"
+        hx-post="{% url 'skills:toggle_verify' entry.pk %}"
+        hx-target="#skill-verify-row-{{ entry.pk }}"
+        hx-swap="outerHTML"
+        class="shrink-0 rounded-lg border px-3 py-1.5 text-xs font-semibold transition {% if entry.is_verified %}border-slate-200 bg-white text-slate-700 hover:bg-slate-50{% else %}border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700{% endif %}"
+    >
+        {% if entry.is_verified %}Revoke{% else %}Verify Skill{% endif %}
+    </button>
+</div>

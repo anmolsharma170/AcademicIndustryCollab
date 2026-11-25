@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Notifications — NexusBridge{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-3xl space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Notifications</h1>
+            <p class="text-sm text-slate-500">Real-time alerts for applications, ATS transitions, and campus approvals.</p>
+        </div>
+        {% if notifications %}
+            <form method="post" action="{% url 'notifications:mark_all_read' %}">
+                {% csrf_token %}
+                <button type="submit" class="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                    Mark All Read
+                </button>
+            </form>
+        {% endif %}
+    </div>
+
+    <div class="space-y-2.5">
+        {% for n in notifications %}
+            {% include "notifications/partials/notification_item.html" with n=n %}
+        {% empty %}
+            {% include "components/empty_state.html" with icon="bell" title="No notifications yet" description="Application updates and campus alerts will appear here." %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

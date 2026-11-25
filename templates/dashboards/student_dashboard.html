@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load portal_tags %}
+{% block title %}Student Dashboard — NexusBridge{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Welcome back, {{ request.user.full_name }}</h1>
+            <p class="text-sm text-slate-500">
+                {{ student.department }} · {{ student.university.name }} · Class of {{ student.graduation_year }}
+            </p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'opportunities:feed' %}" class="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition">
+                Browse Opportunities
+            </a>
+            <a href="{% url 'profiles:student_edit' %}" class="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                Edit Portfolio
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
+            {% include "components/progress_bar.html" with value=strength.percentage label="Profile Strength" %}
+            <p class="text-[11px] text-slate-500">
+                {% if strength.missing_items %}Next: {{ strength.missing_items.0 }}{% else %}All checklist items complete{% endif %}
+            </p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <p class="text-xs font-medium text-slate-500">Applications Submitted</p>
+            <p class="mt-2 text-2xl font-semibold text-slate-900 tabular-nums">{{ total_applications }}</p>
+            <p class="mt-1 text-[11px] text-slate-500">{{ active_interviews }} shortlisted / interviewing</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <p class="text-xs font-medium text-slate-500">Active Offers</p>
+            <p class="mt-2 text-2xl font-semibold text-emerald-600 tabular-nums">{{ offers_count }}</p>
+            <p class="mt-1 text-[11px] text-slate-500">Track responses in Application Tracker</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <p class="text-xs font-medium text-slate-500">University-Verified Skills</p>
+            <p class="mt-2 text-2xl font-semibold text-indigo-600 tabular-nums">{{ verified_skills_count }}</p>
+            <p class="mt-1 text-[11px] text-slate-500">CGPA {{ student.cgpa }}/10.0</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Top Recommended Opportunities -->
+        <div class="rounded-xl border border-slate-200 bg-white shadow-xs lg:col-span-2">
+            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                <div>
+                    <h2 class="text-sm font-semibold text-slate-900">Top Skill-Matched Recommendations</h2>
+                    <p class="text-xs text-slate-500">Ranked specifically for your verified skills and CGPA.</p>
+                </div>
+                <a href="{% url 'opportunities:feed' %}" class="text-xs font-semibold text-indigo-600 hover:underline">
+                    View all →
+                </a>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% for opp, match in top_recommendations %}
+                    <div class="flex items-start justify-between gap-4 px-5 py-4">
+                        <div class="min-w-0 space-y-1">
+                            <a href="{% url 'opportunities:detail' opp.pk %}" class="text-sm font-semibold text-slate-900 hover:text-indigo-600">
+                                {{ opp.title }}
+                            </a>
+                            <p class="text-xs text-slate-500 tabular-nums">
+                                {{ opp.company.company_name }} · {{ opp.get_work_mode_display }} · {{ opp.formatted_compensation }}
+                            </p>
+                            <p class="text-xs text-slate-600">{{ match.summary_text }}</p>
+                        </div>
+                        {% include "components/match_badge.html" with match=match %}
+                    </div>
+                {% empty %}
+                    <div class="p-6 text-center text-xs text-slate-500">No active campus opportunities found right now.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Skill-Gap Insights + Recent Applications -->
+        <div class="space-y-6">
+            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-semibold text-slate-900">Skill-Gap Insights</h2>
+                    <a href="{% url 'skills:manage' %}" class="text-xs font-medium text-indigo-600 hover:underline">Update →</a>
+                </div>
+                <p class="text-xs text-slate-500">Top required skills missing across active campus postings:</p>
+                {% if skill_gaps %}
+                    <div class="space-y-2">
+                        {% for skill_name, count in skill_gaps %}
+                            <div class="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-xs">
+                                <span class="font-medium text-slate-800">{{ skill_name }}</span>
+                                <span class="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-medium text-amber-700 tabular-nums">
+                                    {{ count }} role{{ count|pluralize }}
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-xs font-medium text-emerald-700">Zero missing required skills across current postings!</p>
+                {% endif %}
+            </div>
+
+            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-semibold text-slate-900">Recent Applications</h2>
+                    <a href="{% url 'applications:my_list' %}" class="text-xs font-medium text-indigo-600 hover:underline">Tracker →</a>
+                </div>
+                <div class="space-y-2.5">
+                    {% for app in recent_applications %}
+                        <div class="flex items-center justify-between gap-2 rounded-lg border border-slate-100 px-3 py-2">
+                            <div class="min-w-0">
+                                <a href="{% url 'opportunities:detail' app.opportunity_id %}" class="block truncate text-xs font-semibold text-slate-900 hover:text-indigo-600">
+                                    {{ app.opportunity.title }}
+                                </a>
+                                <p class="truncate text-[11px] text-slate-500">{{ app.opportunity.company.company_name }}</p>
+                            </div>
+                            {% include "components/badge.html" with status=app.status label=app.get_status_display %}
+                        </div>
+                    {% empty %}
+                        <p class="text-xs text-slate-500">No applications submitted yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

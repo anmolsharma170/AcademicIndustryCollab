@@ -1,0 +1,46 @@
+<div id="student-skill-list" class="rounded-xl border border-slate-200 bg-white shadow-xs">
+    <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        <div>
+            <h2 class="text-sm font-semibold text-slate-900">Your Tagged Skills ({{ student_skills|length }})</h2>
+            <p class="text-xs text-slate-500">University-verified skills carry a green badge and higher recruiter trust.</p>
+        </div>
+    </div>
+    <div class="divide-y divide-slate-100">
+        {% for entry in student_skills %}
+            <div class="flex items-center justify-between gap-4 px-5 py-3.5">
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <span class="text-sm font-medium text-slate-900">{{ entry.skill.name }}</span>
+                    <span class="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                        {{ entry.skill.get_category_display }}
+                    </span>
+                    <span class="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700">
+                        {{ entry.get_proficiency_level_display }}
+                    </span>
+                    {% if entry.is_verified %}
+                        <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                            <i data-lucide="badge-check" class="h-3 w-3"></i>
+                            University Verified
+                        </span>
+                    {% endif %}
+                </div>
+                <form
+                    method="post"
+                    action="{% url 'skills:delete' entry.pk %}"
+                    hx-post="{% url 'skills:delete' entry.pk %}"
+                    hx-target="#student-skill-list"
+                    hx-swap="outerHTML"
+                >
+                    {% csrf_token %}
+                    <button type="submit" class="rounded-md p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition" title="Remove skill">
+                        <i data-lucide="trash-2" class="h-4 w-4"></i>
+                    </button>
+                </form>
+            </div>
+        {% empty %}
+            <div class="p-8 text-center">
+                <p class="text-sm font-medium text-slate-700">No skills added yet</p>
+                <p class="mt-1 text-xs text-slate-500">Add at least 3 skills from the panel on the left to unlock accurate job recommendations.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load portal_tags %}
+{% block title %}{{ opportunity.title }} — NexusBridge{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center gap-2 text-xs text-slate-500">
+        <a href="{% url 'opportunities:feed' %}" class="hover:text-slate-900">Opportunities</a>
+        <span>/</span>
+        <span class="text-slate-800 font-medium">{{ opportunity.title }}</span>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Main Posting Body -->
+        <div class="space-y-6 lg:col-span-2">
+            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+                                {{ opportunity.get_opportunity_type_display }}
+                            </span>
+                            <span class="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+                                {{ opportunity.get_work_mode_display }}
+                            </span>
+                            {% if opportunity.is_featured %}
+                                <span class="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+                                    Campus Featured
+                                </span>
+                            {% endif %}
+                        </div>
+                        <h1 class="mt-2.5 text-2xl font-semibold tracking-tight text-slate-900">{{ opportunity.title }}</h1>
+                        <p class="mt-1 text-sm text-slate-600">
+                            <a href="{% url 'profiles:company_detail' opportunity.company.pk %}" class="font-semibold text-indigo-600 hover:underline">
+                                {{ opportunity.company.company_name }}
+                            </a>
+                            · {{ opportunity.location }}
+                        </p>
+                    </div>
+                    {% if match %}
+                        {% include "components/match_badge.html" with match=match %}
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4 text-xs sm:grid-cols-4">
+                    <div>
+                        <p class="text-slate-400">Compensation</p>
+                        <p class="mt-0.5 font-semibold text-slate-900 tabular-nums">{{ opportunity.formatted_compensation }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400">Min CGPA</p>
+                        <p class="mt-0.5 font-semibold text-slate-900 tabular-nums">{{ opportunity.min_cgpa }}/10.0</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400">Deadline</p>
+                        <p class="mt-0.5 font-semibold text-slate-900">{{ opportunity.deadline|date:"M d, Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400">Campus Scope</p>
+                        <p class="mt-0.5 font-semibold text-slate-900">
+                            {% if opportunity.target_university %}{{ opportunity.target_university.code }}{% else %}All Partners{% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-2">
+                    <h2 class="text-sm font-semibold text-slate-900">Role Overview</h2>
+                    <p class="whitespace-pre-line text-sm leading-relaxed text-slate-600">{{ opportunity.description }}</p>
+                </div>
+
+                {% if opportunity.eligibility_notes %}
+                    <div class="space-y-1.5 border-t border-slate-100 pt-4">
+                        <h2 class="text-sm font-semibold text-slate-900">Eligibility Notes</h2>
+                        <p class="text-xs leading-relaxed text-slate-600">{{ opportunity.eligibility_notes }}</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if request.user.is_company and top_candidates %}
+                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+                    <h2 class="text-sm font-semibold text-slate-900">Top Skill-Matched Candidates on NexusBridge</h2>
+                    <div class="mt-4 divide-y divide-slate-100">
+                        {% for cand, cand_match in top_candidates %}
+                            <div class="flex items-center justify-between gap-4 py-3">
+                                <div>
+                                    <a href="{% url 'profiles:student_detail' cand.pk %}" class="text-sm font-medium text-slate-900 hover:text-indigo-600">
+                                        {{ cand.user.full_name }}
+                                    </a>
+                                    <p class="text-xs text-slate-500">{{ cand.university.code }} · {{ cand.department }} · CGPA {{ cand.cgpa }}</p>
+                                    <p class="mt-0.5 text-xs text-slate-600">{{ cand_match.summary_text }}</p>
+                                </div>
+                                {% include "components/match_badge.html" with match=cand_match %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Match Breakdown & Application Box -->
+        <div class="space-y-6">
+            {% if match %}
+                <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                    <h2 class="text-sm font-semibold text-slate-900">Skill Match Breakdown</h2>
+                    <p class="text-xs text-slate-600">{{ match.summary_text }}</p>
+
+                    {% if match.matched_required %}
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Matched Required</p>
+                            <div class="mt-1.5 flex flex-wrap gap-1.5">
+                                {% for s in match.matched_required %}
+                                    <span class="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">{{ s }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if match.partial_required %}
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-wider text-indigo-700">Partial Proficiency</p>
+                            <div class="mt-1.5 flex flex-wrap gap-1.5">
+                                {% for s in match.partial_required %}
+                                    <span class="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700">{{ s }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if match.missing_required %}
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-wider text-rose-700">Missing Required</p>
+                            <div class="mt-1.5 flex flex-wrap gap-1.5">
+                                {% for s in match.missing_required %}
+                                    <span class="rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-medium text-rose-700">{{ s }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if match.matched_bonus %}
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Bonus Skills Matched</p>
+                            <div class="mt-1.5 flex flex-wrap gap-1.5">
+                                {% for s in match.matched_bonus %}
+                                    <span class="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-700">{{ s }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if match.eligibility_notes %}
+                        <ul class="space-y-1 border-t border-slate-100 pt-3 text-xs text-slate-600">
+                            {% for note in match.eligibility_notes %}
+                                <li>• {{ note }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                {% include "applications/partials/apply_box.html" %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

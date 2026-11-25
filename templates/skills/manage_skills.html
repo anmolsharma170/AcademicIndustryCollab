@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}My Skills — NexusBridge{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Skills &amp; Proficiency Matrix</h1>
+        <p class="text-sm text-slate-500">Add standardized skills to power accurate job Match Scores and earn university verification badges.</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Add / Update Skill Form -->
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs h-fit">
+            <h2 class="text-sm font-semibold text-slate-900">Add or Update a Skill</h2>
+            <p class="mt-1 text-xs text-slate-500">Select from the standardized taxonomy and set your current proficiency.</p>
+            <form
+                method="post"
+                hx-post="{% url 'skills:manage' %}"
+                hx-target="#student-skill-list"
+                hx-swap="outerHTML"
+                class="mt-4 space-y-4"
+            >
+                {% csrf_token %}
+                {% include "components/form_field.html" with field=form.skill %}
+                {% include "components/form_field.html" with field=form.proficiency_level %}
+                <button
+                    type="submit"
+                    class="w-full rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition"
+                >
+                    Save Skill
+                </button>
+            </form>
+        </div>
+
+        <!-- Skill List -->
+        <div class="lg:col-span-2">
+            {% include "skills/partials/student_skill_list.html" %}
+        </div>
+    </div>
+</div>
+{% endblock %}

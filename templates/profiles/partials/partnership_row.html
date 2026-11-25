@@ -1,0 +1,39 @@
+<div id="partnership-row-{{ partnership.pk }}" class="flex items-center justify-between gap-4 px-5 py-3.5">
+    <div class="min-w-0">
+        <div class="flex items-center gap-2">
+            <a href="{% url 'profiles:company_detail' partnership.company.pk %}" class="truncate text-sm font-medium text-slate-900 hover:text-indigo-600">
+                {{ partnership.company.company_name }}
+            </a>
+            {% include "components/badge.html" with status=partnership.status label=partnership.get_status_display %}
+        </div>
+        <p class="mt-0.5 text-xs text-slate-500">
+            {{ partnership.company.industry }} · {{ partnership.company.headquarters }}
+        </p>
+    </div>
+    <div class="flex shrink-0 items-center gap-1.5">
+        {% if partnership.status != "APPROVED" %}
+            <button
+                type="button"
+                hx-post="{% url 'profiles:update_partnership_status' partnership.pk %}"
+                hx-vals='{"status": "APPROVED"}'
+                hx-target="#partnership-row-{{ partnership.pk }}"
+                hx-swap="outerHTML"
+                class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition"
+            >
+                Approve
+            </button>
+        {% endif %}
+        {% if partnership.status != "SUSPENDED" %}
+            <button
+                type="button"
+                hx-post="{% url 'profiles:update_partnership_status' partnership.pk %}"
+                hx-vals='{"status": "SUSPENDED"}'
+                hx-target="#partnership-row-{{ partnership.pk }}"
+                hx-swap="outerHTML"
+                class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition"
+            >
+                Suspend
+            </button>
+        {% endif %}
+    </div>
+</div>

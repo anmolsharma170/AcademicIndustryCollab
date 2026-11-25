@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}My Portfolio — NexusBridge{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Student Portfolio</h1>
+            <p class="text-sm text-slate-500">Keep your academic details, resume, and project showcases up to date.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            {% if student.is_verified_by_university %}
+                <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                    <i data-lucide="badge-check" class="h-3.5 w-3.5"></i>
+                    Verified by {{ student.university.code }}
+                </span>
+            {% else %}
+                <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+                    <i data-lucide="clock" class="h-3.5 w-3.5"></i>
+                    Pending Campus Verification
+                </span>
+            {% endif %}
+            <a href="{% url 'profiles:student_detail' student.pk %}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition">
+                Public Preview
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Left column: Profile form -->
+        <div class="space-y-6 lg:col-span-2">
+            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+                <h2 class="text-base font-semibold text-slate-900">Academic &amp; Career Details</h2>
+                <form method="post" enctype="multipart/form-data" class="mt-5 space-y-4">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {% include "components/form_field.html" with field=form.university %}
+                        {% include "components/form_field.html" with field=form.roll_number %}
+                        {% include "components/form_field.html" with field=form.department %}
+                        {% include "components/form_field.html" with field=form.graduation_year %}
+                        {% include "components/form_field.html" with field=form.cgpa %}
+                        {% include "components/form_field.html" with field=form.academic_standing %}
+                    </div>
+                    {% include "components/form_field.html" with field=form.bio %}
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        {% include "components/form_field.html" with field=form.github_url %}
+                        {% include "components/form_field.html" with field=form.linkedin_url %}
+                        {% include "components/form_field.html" with field=form.portfolio_url %}
+                    </div>
+                    <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        {% include "components/form_field.html" with field=form.resume %}
+                        {% if student.resume %}
+                            <p class="mt-2 text-xs text-slate-600">
+                                Current resume:
+                                <a href="{{ student.resume.url }}" target="_blank" class="font-medium text-indigo-600 hover:underline">
+                                    Download PDF
+                                </a>
+                            </p>
+                        {% endif %}
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition">
+                            Save Portfolio Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Project Showcases -->
+            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-base font-semibold text-slate-900">Project Showcases</h2>
+                        <p class="text-xs text-slate-500">Highlight capstones, open-source work, or research prototypes.</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 space-y-3">
+                    {% for project in student.projects.all %}
+                        <div class="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                            <div class="space-y-1.5">
+                                <h3 class="text-sm font-semibold text-slate-900">{{ project.title }}</h3>
+                                <p class="text-xs text-slate-600">{{ project.summary }}</p>
+                                <div class="flex flex-wrap gap-1.5 pt-1">
+                                    {% for tech in project.tech_list %}
+                                        <span class="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-700">{{ tech }}</span>
+                                    {% endfor %}
+                                </div>
+                                <div class="flex items-center gap-3 pt-1 text-xs">
+                                    {% if project.repo_url %}
+                                        <a href="{{ project.repo_url }}" target="_blank" class="font-medium text-indigo-600 hover:underline">Repository →</a>
+                                    {% endif %}
+                                    {% if project.live_url %}
+                                        <a href="{{ project.live_url }}" target="_blank" class="font-medium text-indigo-600 hover:underline">Live Demo →</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <form method="post" action="{% url 'profiles:project_delete' project.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="rounded-md p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition" title="Delete project">
+                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                </button>
+                            </form>
+                        </div>
+                    {% empty %}
+                        <p class="rounded-lg border border-dashed border-slate-200 p-4 text-center text-xs text-slate-500">
+                            No projects added yet. Add your first project below.
+                        </p>
+                    {% endfor %}
+                </div>
+
+                <form method="post" action="{% url 'profiles:project_add' %}" class="mt-5 space-y-3 border-t border-slate-100 pt-5">
+                    {% csrf_token %}
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500">Add New Project</h3>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {% include "components/form_field.html" with field=project_form.title %}
+                        {% include "components/form_field.html" with field=project_form.tech_stack %}
+                    </div>
+                    {% include "components/form_field.html" with field=project_form.summary %}
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {% include "components/form_field.html" with field=project_form.repo_url %}
+                        {% include "components/form_field.html" with field=project_form.live_url %}
+                    </div>
+                    <button type="submit" class="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                        + Add Project
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right column: Profile Strength & Skills quick link -->
+        <div class="space-y-6">
+            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+                <h2 class="text-sm font-semibold text-slate-900">Profile Strength</h2>
+                {% include "components/progress_bar.html" with value=strength.percentage label="Completion Score" %}
+                {% if strength.missing_items %}
+                    <div class="space-y-1.5 pt-2">
+                        <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Next to complete</p>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            {% for item in strength.missing_items %}
+                                <li class="flex items-center gap-2">
+                                    <i data-lucide="circle" class="h-3 w-3 text-amber-500"></i>
+                                    {{ item }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% else %}
+                    <p class="text-xs font-medium text-emerald-700">Your profile is 100% ready for recruiters!</p>
+                {% endif %}
+            </div>
+
+            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-semibold text-slate-900">Skills ({{ student.student_skills.count }})</h2>
+                    <a href="{% url 'skills:manage' %}" class="text-xs font-medium text-indigo-600 hover:text-indigo-700">Manage →</a>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                    {% for entry in student.student_skills.all %}
+                        <span class="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium {% if entry.is_verified %}border-emerald-200 bg-emerald-50 text-emerald-700{% else %}border-slate-200 bg-slate-50 text-slate-700{% endif %}">
+                            {{ entry.skill.name }}
+                            {% if entry.is_verified %}
+                                <i data-lucide="badge-check" class="h-3 w-3"></i>
+                            {% endif %}
+                        </span>
+                    {% empty %}
+                        <p class="text-xs text-slate-500">No skills tagged yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

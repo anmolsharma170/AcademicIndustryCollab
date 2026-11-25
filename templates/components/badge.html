@@ -1,0 +1,4 @@
+{% load portal_tags %}
+<span class="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium {{ status|status_badge_class }} {{ extra_class|default:'' }}">
+    {{ label|default:status|title }}
+</span>

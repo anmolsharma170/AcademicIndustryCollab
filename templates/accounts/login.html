@@ -1,0 +1,46 @@
+{% extends "base_auth.html" %}
+{% block title %}Sign In — NexusBridge{% endblock %}
+{% block content %}
+<div class="flex min-h-screen flex-col items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md">
+        <a href="{% url 'dashboards:landing' %}" class="mb-6 flex items-center justify-center gap-2.5">
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-xs">
+                <i data-lucide="layers" class="h-5 w-5"></i>
+            </span>
+            <span class="text-lg font-semibold tracking-tight text-slate-900">NexusBridge</span>
+        </a>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-7 shadow-xs">
+            <div class="mb-6">
+                <h1 class="text-xl font-semibold tracking-tight text-slate-900">Welcome back</h1>
+                <p class="mt-1 text-sm text-slate-500">Sign in to your student, company, or university workspace.</p>
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs font-medium text-rose-700">
+                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                {% include "components/form_field.html" with field=form.username %}
+                {% include "components/form_field.html" with field=form.password %}
+                <button
+                    type="submit"
+                    class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                >
+                    Sign In
+                </button>
+            </form>
+
+            <p class="mt-6 text-center text-xs text-slate-500">
+                New to NexusBridge?
+                <a href="{% url 'accounts:register' %}" class="font-semibold text-indigo-600 hover:text-indigo-700">
+                    Create an account
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

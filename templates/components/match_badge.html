@@ -1,0 +1,12 @@
+{% load portal_tags %}
+<div class="inline-flex flex-col items-end gap-1">
+    <span class="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold tabular-nums {{ match.score|match_badge_class }}">
+        <i data-lucide="sparkles" class="h-3 w-3"></i>
+        {{ match.score }}% Match
+    </span>
+    {% if not match.is_eligible %}
+        <span class="rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700">
+            Eligibility Gap
+        </span>
+    {% endif %}
+</div>

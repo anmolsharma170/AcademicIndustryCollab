@@ -1,0 +1,72 @@
+{% load portal_tags %}
+<div id="student-app-card-{{ app.pk }}" class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4" x-data="{ showTimeline: false }">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{% url 'opportunities:detail' app.opportunity_id %}" class="text-base font-semibold text-slate-900 hover:text-indigo-600">
+                    {{ app.opportunity.title }}
+                </a>
+                {% include "components/badge.html" with status=app.status label=app.get_status_display %}
+                <span class="rounded-full border px-2.5 py-0.5 text-xs font-semibold tabular-nums {{ app.match_score_snapshot|match_badge_class }}">
+                    {{ app.match_score_snapshot }}% Match
+                </span>
+            </div>
+            <p class="mt-1 text-xs text-slate-500">
+                {{ app.opportunity.company.company_name }} · {{ app.opportunity.location }} · Applied {{ app.applied_at|date:"M d, Y" }}
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            {% if app.status == "OFFERED" %}
+                <button
+                    type="button"
+                    hx-post="{% url 'applications:transition' app.pk %}"
+                    hx-vals='{"status": "ACCEPTED", "note": "Offer accepted by student"}'
+                    hx-target="#student-app-card-{{ app.pk }}"
+                    hx-swap="outerHTML"
+                    class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition"
+                >
+                    Accept Offer
+                </button>
+                <button
+                    type="button"
+                    hx-post="{% url 'applications:transition' app.pk %}"
+                    hx-vals='{"status": "REJECTED", "note": "Offer declined by student"}'
+                    hx-target="#student-app-card-{{ app.pk }}"
+                    hx-swap="outerHTML"
+                    class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition"
+                >
+                    Decline
+                </button>
+            {% endif %}
+            <button
+                type="button"
+                @click="showTimeline = !showTimeline"
+                class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 transition"
+            >
+                <span x-text="showTimeline ? 'Hide Timeline' : 'Timeline ({{ app.status_logs.count }})'"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Audit Timeline -->
+    <div x-show="showTimeline" x-cloak class="border-t border-slate-100 pt-3">
+        <ol class="space-y-2 border-l-2 border-slate-200 pl-4">
+            {% for log in app.status_logs.all %}
+                <li class="relative text-xs">
+                    <span class="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-indigo-600"></span>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="font-semibold text-slate-900">{{ log.get_to_status_display }}</span>
+                        <span class="text-slate-400">{{ log.created_at|date:"M d, Y H:i" }}</span>
+                        {% if log.changed_by %}
+                            <span class="text-slate-500">by {{ log.changed_by.full_name }}</span>
+                        {% endif %}
+                    </div>
+                    {% if log.note %}
+                        <p class="mt-0.5 text-slate-600">{{ log.note }}</p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ol>
+    </div>
+</div>

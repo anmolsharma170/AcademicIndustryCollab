@@ -1,0 +1,12 @@
+<div class="space-y-1.5">
+    <div class="flex items-center justify-between text-xs">
+        <span class="font-medium text-slate-700">{{ label|default:"Profile Completion" }}</span>
+        <span class="font-semibold text-slate-900 tabular-nums">{{ value|default:0 }}%</span>
+    </div>
+    <div class="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+        <div
+            class="h-full rounded-full transition-all duration-300 {% if value >= 80 %}bg-emerald-500{% elif value >= 50 %}bg-indigo-600{% else %}bg-amber-500{% endif %}"
+            style="width: {{ value|default:0 }}%;"
+        ></div>
+    </div>
+</div>

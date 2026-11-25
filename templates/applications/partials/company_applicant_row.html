@@ -1,0 +1,46 @@
+{% load portal_tags %}
+<div id="applicant-row-{{ app.pk }}" class="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+    <div class="flex items-start gap-3 min-w-0">
+        <input type="checkbox" name="application_ids" value="{{ app.pk }}" class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600">
+        <div class="min-w-0 space-y-1">
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{% url 'profiles:student_detail' app.student_id %}" class="text-sm font-semibold text-slate-900 hover:text-indigo-600">
+                    {{ app.student.user.full_name }}
+                </a>
+                <span class="rounded-full border px-2 py-0.5 text-[11px] font-semibold tabular-nums {{ app.match_score_snapshot|match_badge_class }}">
+                    {{ app.match_score_snapshot }}% Match
+                </span>
+                {% include "components/badge.html" with status=app.status label=app.get_status_display %}
+            </div>
+            <p class="text-xs text-slate-500 tabular-nums">
+                {{ app.student.university.code }} · {{ app.student.department }} · CGPA {{ app.student.cgpa }} · Class of {{ app.student.graduation_year }}
+            </p>
+            {% if app.match_breakdown_snapshot.summary_text %}
+                <p class="text-xs text-slate-600">{{ app.match_breakdown_snapshot.summary_text }}</p>
+            {% endif %}
+            {% if app.cover_note %}
+                <p class="rounded-md bg-slate-50 px-2.5 py-1.5 text-xs italic text-slate-600">"{{ app.cover_note }}"</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 shrink-0">
+        {% if app.student.resume %}
+            <a href="{{ app.student.resume.url }}" target="_blank" class="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                Resume
+            </a>
+        {% endif %}
+        {% for target_val, target_label in app.next_choices %}
+            <button
+                type="button"
+                hx-post="{% url 'applications:transition' app.pk %}"
+                hx-vals='{"status": "{{ target_val }}"}'
+                hx-target="#applicant-row-{{ app.pk }}"
+                hx-swap="outerHTML"
+                class="rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition {% if target_val == 'REJECTED' %}border-rose-200 bg-white text-rose-600 hover:bg-rose-50{% elif target_val == 'OFFERED' %}border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700{% else %}border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100{% endif %}"
+            >
+                {{ target_label }}
+            </button>
+        {% endfor %}
+    </div>
+</div>

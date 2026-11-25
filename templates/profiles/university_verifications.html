@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Campus Verifications — NexusBridge{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Campus Verifications &amp; Partnerships</h1>
+        <p class="text-sm text-slate-500">{{ university.name }} ({{ university.code }}) governance queues.</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Student Verification Queue -->
+        <div class="rounded-xl border border-slate-200 bg-white shadow-xs">
+            <div class="border-b border-slate-100 px-5 py-4">
+                <h2 class="text-sm font-semibold text-slate-900">Student Academic Verification</h2>
+                <p class="text-xs text-slate-500">Confirm enrollment and CGPA records for campus students.</p>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% for student in students %}
+                    {% include "profiles/partials/student_verify_row.html" with student=student %}
+                {% empty %}
+                    <p class="p-6 text-center text-xs text-slate-500">No students registered from {{ university.code }} yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Company Partnership Queue -->
+        <div class="rounded-xl border border-slate-200 bg-white shadow-xs">
+            <div class="border-b border-slate-100 px-5 py-4">
+                <h2 class="text-sm font-semibold text-slate-900">Industry Partnership Approvals</h2>
+                <p class="text-xs text-slate-500">Approve or suspend companies recruiting on campus.</p>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% for partnership in partnerships %}
+                    {% include "profiles/partials/partnership_row.html" with partnership=partnership %}
+                {% empty %}
+                    <p class="p-6 text-center text-xs text-slate-500">No partnership requests yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

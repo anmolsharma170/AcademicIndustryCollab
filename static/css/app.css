@@ -1,0 +1,22 @@
+/* Minimal custom styles complementing Tailwind CSS */
+html {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
+}
+
+/* HTMX loading indicators */
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+    display: inline-flex;
+}
+
+[x-cloak] {
+    display: none !important;
+}

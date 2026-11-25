@@ -1,0 +1,23 @@
+<div class="space-y-2">
+    {% for n in notifications %}
+        {% include "notifications/partials/notification_item.html" with n=n %}
+    {% empty %}
+        <p class="py-4 text-center text-xs text-slate-500">You're all caught up!</p>
+    {% endfor %}
+    <div class="flex items-center justify-between border-t border-slate-100 pt-2">
+        <a href="{% url 'notifications:inbox' %}" class="text-[11px] font-semibold text-indigo-600 hover:underline">
+            View all →
+        </a>
+        {% if notifications %}
+            <button
+                type="button"
+                hx-post="{% url 'notifications:mark_all_read' %}"
+                hx-target="#notification-popover-body"
+                hx-swap="innerHTML"
+                class="text-[11px] font-medium text-slate-500 hover:text-slate-900"
+            >
+                Mark all read
+            </button>
+        {% endif %}
+    </div>
+</div>

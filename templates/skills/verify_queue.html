@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Skill Verification Queue — NexusBridge{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Student Skill Verification</h1>
+            <p class="text-sm text-slate-500">Endorse verified academic and lab competencies for {{ university.name }} students.</p>
+        </div>
+        <div class="inline-flex rounded-lg border border-slate-200 bg-white p-1 text-xs font-medium">
+            <a href="?status=pending" class="rounded-md px-3 py-1.5 {% if status_filter == 'pending' %}bg-indigo-600 text-white{% else %}text-slate-600 hover:text-slate-900{% endif %}">Pending</a>
+            <a href="?status=verified" class="rounded-md px-3 py-1.5 {% if status_filter == 'verified' %}bg-indigo-600 text-white{% else %}text-slate-600 hover:text-slate-900{% endif %}">Verified</a>
+            <a href="?status=all" class="rounded-md px-3 py-1.5 {% if status_filter == 'all' %}bg-indigo-600 text-white{% else %}text-slate-600 hover:text-slate-900{% endif %}">All</a>
+        </div>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 bg-white shadow-xs divide-y divide-slate-100">
+        {% for entry in student_skills %}
+            {% include "skills/partials/skill_verify_row.html" with entry=entry %}
+        {% empty %}
+            <div class="p-8 text-center text-xs text-slate-500">No skills in this queue.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

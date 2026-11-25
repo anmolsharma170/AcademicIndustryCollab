@@ -1,0 +1,57 @@
+<div id="company-opp-row-{{ opp.pk }}" class="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="min-w-0 space-y-1">
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{% url 'opportunities:detail' opp.pk %}" class="text-sm font-semibold text-slate-900 hover:text-indigo-600">
+                {{ opp.title }}
+            </a>
+            {% include "components/badge.html" with status=opp.status label=opp.get_status_display %}
+            {% include "components/badge.html" with status=opp.approval_status label=opp.get_approval_status_display %}
+        </div>
+        <p class="text-xs text-slate-500 tabular-nums">
+            {{ opp.get_opportunity_type_display }} · {{ opp.formatted_compensation }} · Deadline {{ opp.deadline|date:"M d, Y" }} · {{ opp.applicant_count|default:0 }} applicant(s)
+        </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+        <a href="{% url 'applications:company_pipeline' opp.pk %}" class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition">
+            ATS Pipeline ({{ opp.applicant_count|default:0 }})
+        </a>
+        <a href="{% url 'opportunities:edit' opp.pk %}" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition">
+            Edit
+        </a>
+        {% if opp.status == "ACTIVE" %}
+            <button
+                type="button"
+                hx-post="{% url 'opportunities:status_update' opp.pk %}"
+                hx-vals='{"status": "PAUSED"}'
+                hx-target="#company-opp-row-{{ opp.pk }}"
+                hx-swap="outerHTML"
+                class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 transition"
+            >
+                Pause
+            </button>
+        {% elif opp.status == "PAUSED" or opp.status == "DRAFT" %}
+            <button
+                type="button"
+                hx-post="{% url 'opportunities:status_update' opp.pk %}"
+                hx-vals='{"status": "ACTIVE"}'
+                hx-target="#company-opp-row-{{ opp.pk }}"
+                hx-swap="outerHTML"
+                class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition"
+            >
+                Activate
+            </button>
+        {% endif %}
+        {% if opp.status != "CLOSED" %}
+            <button
+                type="button"
+                hx-post="{% url 'opportunities:status_update' opp.pk %}"
+                hx-vals='{"status": "CLOSED"}'
+                hx-target="#company-opp-row-{{ opp.pk }}"
+                hx-swap="outerHTML"
+                class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition"
+            >
+                Close
+            </button>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Posting Approvals — NexusBridge{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Opportunity Review Queue</h1>
+        <p class="text-sm text-slate-500">Approve, reject, or feature industry postings for {{ university.name }} students.</p>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 bg-white shadow-xs divide-y divide-slate-100">
+        {% for opp in opportunities %}
+            {% include "opportunities/partials/approval_row.html" with opp=opp %}
+        {% empty %}
+            <div class="p-8 text-center text-xs text-slate-500">No opportunities awaiting review.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}My Applications — NexusBridge{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Application Tracker</h1>
+            <p class="text-sm text-slate-500">Monitor your ATS pipeline stages, status timestamps, and pending offers.</p>
+        </div>
+        <a href="{% url 'opportunities:feed' %}" class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-indigo-700 transition">
+            Explore More Roles
+        </a>
+    </div>
+
+    <div class="space-y-4">
+        {% for app in applications %}
+            {% include "applications/partials/student_application_card.html" with app=app %}
+        {% empty %}
+            {% url 'opportunities:feed' as feed_url %}
+            {% include "components/empty_state.html" with icon="send" title="No applications yet" description="Browse skill-matched internships and placements to submit your first application." cta_url=feed_url cta_label="Browse Opportunities" %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

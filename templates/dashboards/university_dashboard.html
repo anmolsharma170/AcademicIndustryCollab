@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}University Dashboard — NexusBridge{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ university.name }} ({{ university.code }})</h1>
+            <p class="text-sm text-slate-500">Campus placement metrics, skill supply-demand intelligence, and approval queues.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{% url 'opportunities:university_approvals' %}" class="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition">
+                Review Postings ({{ pending_opportunities_count }})
+            </a>
+            <a href="{% url 'profiles:university_verifications' %}" class="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                Verifications &amp; Partners
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <p class="text-xs font-medium text-slate-500">Campus Placement Rate</p>
+            <p class="mt-2 text-2xl font-semibold text-emerald-600 tabular-nums">{{ placement_rate }}%</p>
+            <p class="mt-1 text-[11px] text-slate-500">{{ placed_students }} of {{ total_students }} students offered/placed</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <p class="text-xs font-medium text-slate-500">Avg Internship Stipend</p>
+            <p class="mt-2 text-2xl font-semibold text-slate-900 tabular-nums">₹{{ avg_monthly_stipend }}/mo</p>
+            <p class="mt-1 text-[11px] text-slate-500">Avg Full-Time CTC: ₹{{ avg_annual_ctc_lpa }} LPA</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <p class="text-xs font-medium text-slate-500">Verified Campus Talent</p>
+            <p class="mt-2 text-2xl font-semibold text-indigo-600 tabular-nums">{{ verified_students }} / {{ total_students }}</p>
+            <p class="mt-1 text-[11px] text-slate-500">{{ pending_skills_count }} skill verification(s) pending</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <p class="text-xs font-medium text-slate-500">Pending Governance Actions</p>
+            <p class="mt-2 text-2xl font-semibold text-amber-600 tabular-nums">{{ pending_opportunities_count|add:pending_partnerships_count }}</p>
+            <p class="mt-1 text-[11px] text-slate-500">{{ pending_opportunities_count }} postings · {{ pending_partnerships_count }} partnerships</p>
+        </div>
+    </div>
+
+    <!-- Chart.js Analytics Row -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <h2 class="text-sm font-semibold text-slate-900">Top Hiring Companies</h2>
+            <p class="text-xs text-slate-500">Applications vs. Offers extended to {{ university.code }} students.</p>
+            <div class="mt-4 h-64">
+                <canvas id="topCompaniesChart"></canvas>
+            </div>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <h2 class="text-sm font-semibold text-slate-900">Most In-Demand Skills vs. Campus Supply</h2>
+            <p class="text-xs text-slate-500">Industry required skills compared to students listing each skill.</p>
+            <div class="mt-4 h-64">
+                <canvas id="skillsDemandChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Queues -->
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <a href="{% url 'skills:verify_queue' %}" class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs hover:border-indigo-300 transition">
+            <p class="text-sm font-semibold text-slate-900">Skill Verification Queue</p>
+            <p class="mt-1 text-xs text-slate-500">{{ pending_skills_count }} student skill endorsement(s) awaiting review →</p>
+        </a>
+        <a href="{% url 'opportunities:university_approvals' %}" class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs hover:border-indigo-300 transition">
+            <p class="text-sm font-semibold text-slate-900">Opportunity Approvals</p>
+            <p class="mt-1 text-xs text-slate-500">{{ pending_opportunities_count }} company posting(s) awaiting approval →</p>
+        </a>
+        <a href="{% url 'profiles:university_verifications' %}" class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs hover:border-indigo-300 transition">
+            <p class="text-sm font-semibold text-slate-900">Company Partnerships</p>
+            <p class="mt-1 text-xs text-slate-500">{{ pending_partnerships_count }} partner request(s) awaiting review →</p>
+        </a>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    if (!window.Chart) return;
+    const companiesCtx = document.getElementById("topCompaniesChart");
+    if (companiesCtx) {
+        new Chart(companiesCtx, {
+            type: "bar",
+            data: {
+                labels: {{ company_labels_json|safe }},
+                datasets: [
+                    { label: "Applications", data: {{ company_apps_json|safe }}, backgroundColor: "#cbd5e1", borderRadius: 4 },
+                    { label: "Offers / Accepted", data: {{ company_offers_json|safe }}, backgroundColor: "#10b981", borderRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }
+            }
+        });
+    }
+
+    const skillsCtx = document.getElementById("skillsDemandChart");
+    if (skillsCtx) {
+        new Chart(skillsCtx, {
+            type: "bar",
+            data: {
+                labels: {{ skill_labels_json|safe }},
+                datasets: [
+                    { label: "Industry Demand (Roles)", data: {{ skill_demand_json|safe }}, backgroundColor: "#4f46e5", borderRadius: 4 },
+                    { label: "Campus Student Supply", data: {{ skill_supply_json|safe }}, backgroundColor: "#38bdf8", borderRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
